@@ -1,0 +1,22 @@
+/* Survey Submitted */
+select device_id, visit_id, json_data['personId']::string person_id, 
+action_name, json_data['metadata']['id']::string id, json_data, server_timestamp, 
+client_timestamp, opts.value['name']::string answer, opts.value['value'] val 
+from warehouse.logging_ods.tracks_user_action,
+lateral flatten(input => json_data['metadata']['options']) opts
+where action_name = 'up_survey_modal_submitted' and id = 'add_plans_to_itinerary' and val; 
+
+/* Survey Opened */
+select device_id, visit_id, json_data['personId']::string person_id, 
+action_name, json_data['metadata']['id']::string id, json_data, server_timestamp, 
+client_timestamp 
+from warehouse.logging_ods.tracks_user_action
+where action_name = 'up_survey_modal_open' and id = 'add_plans_to_itinerary';
+
+/* Victor */
+
+select track_name, count(distinct visit_id) cnt_visits, min(UNIFIED_TIMESTAMP)::date min_dt, max(UNIFIED_TIMESTAMP)::date max_dt
+from SANDBOX.labs.UNIFIED_TRACKS UT
+where ut.TRACK_NAME in ('up_viewed_trips_upcoming', 'up_survey_modal_open', 'up_survey_modal_submitted')
+and UNIFIED_TIMESTAMP >= '2019-03-20'
+group by track_name
